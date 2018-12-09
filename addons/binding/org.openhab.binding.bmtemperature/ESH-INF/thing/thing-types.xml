@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="bmtemperature"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 http://eclipse.org/smarthome/schemas/thing-description-1.0.0.xsd">
+
+	<!-- Sample Thing Type -->
+	<thing-type id="pid">
+		<label>BmTemperature Binding Thing</label>
+		<description>Sample thing for BmTemperature Binding</description>
+
+		<channels>
+			<channel id="actual" typeId="pid-actual" />
+			<channel id="setpoint" typeId="pid-setpoint" />
+			<channel id="auto" typeId="pid-auto" />
+			<channel id="enabled" typeId="pid-enabled" />
+			<channel id="heater" typeId="pid-heater" />
+		</channels>
+
+		<config-description>
+			<parameter name="ipAddress" type="text" required="true">
+				<label>Sensor address</label>
+				<description>Sensor address</description>
+			</parameter>
+		</config-description>
+
+	</thing-type>
+
+	<channel-type id="pid-actual">
+		<item-type>Number</item-type>
+		<label>Actual temperature</label>
+		<description>Actual Temperature</description>
+	</channel-type>
+
+	<channel-type id="pid-setpoint">
+		<item-type>Number</item-type>
+		<label>Target temperature</label>
+		<description>Target Temperature</description>
+	</channel-type>
+
+	<channel-type id="pid-auto">
+		<item-type>Switch</item-type>
+		<label>Automatic mode switch</label>
+		<description>Automatic mode switch</description>
+	</channel-type>
+
+	<channel-type id="pid-enabled">
+		<item-type>Switch</item-type>
+		<label>Main operation switch</label>
+		<description>Main operation switch</description>
+	</channel-type>
+
+	<channel-type id="pid-heater">
+		<item-type>Switch</item-type>
+		<label>Actual temperature</label>
+		<description>Actual Temperature</description>
+		<state readOnly="true" pattern="%s"></state>
+	</channel-type>
+
+</thing:thing-descriptions>
