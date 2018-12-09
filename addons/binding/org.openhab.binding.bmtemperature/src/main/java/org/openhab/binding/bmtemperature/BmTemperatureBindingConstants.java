@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.bmtemperature.internal;
+package org.openhab.binding.bmtemperature;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
@@ -30,5 +30,9 @@ public class BmTemperatureBindingConstants {
     public static final ThingTypeUID THING_TYPE_SAMPLE = new ThingTypeUID(BINDING_ID, "sample");
 
     // List of all Channel ids
-    public static final String CHANNEL_1 = "channel1";
+    public static final String ACTUAL_CHANNEL = "actual";
+    public static final String SETPOINT_CHANNEL = "setpoint";
+    public static final String AUTO_CHANNEL = "auto";
+    public static final String ENABLED_CHANNEL = "enabled";
+    public static final String HEATER_CHANNEL = "heater";
 }

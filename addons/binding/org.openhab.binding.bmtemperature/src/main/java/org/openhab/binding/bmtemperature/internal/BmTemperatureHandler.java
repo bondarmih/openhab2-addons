@@ -12,19 +12,24 @@
  */
 package org.openhab.binding.bmtemperature.internal;
 
-import static org.openhab.binding.bmtemperature.internal.BmTemperatureBindingConstants.*;
+import static org.openhab.binding.bmtemperature.BmTemperatureBindingConstants.*;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.binding.bmtemperature.internal.BmTemperatureConfiguration;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.RefreshType;
+import org.openhab.binding.bmtemperature.controller.TemperatureControllerEventHandler;
+import org.openhab.binding.bmtemperature.controller.TemperatureControllerFactory;
+import org.openhab.binding.bmtemperature.sensor.TemperatureSensor;
+import org.openhab.binding.bmtemperature.sensor.TemperatureSensorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.util.
 
 /**
  * The {@link BmTemperatureHandler} is responsible for handling commands, which are
@@ -33,9 +38,10 @@ import org.slf4j.LoggerFactory;
  * @author bondarmih - Initial contribution
  */
 @NonNullByDefault
-public class BmTemperatureHandler extends BaseThingHandler {
+public class BmTemperatureHandler extends BaseThingHandler implements TemperatureControllerEventHandler {
 
     private final Logger logger = LoggerFactory.getLogger(BmTemperatureHandler.class);
+    private HttpClient httpClient;
 
     @Nullable
     private BmTemperatureConfiguration config;
@@ -44,9 +50,20 @@ public class BmTemperatureHandler extends BaseThingHandler {
         super(thing);
     }
 
+    public BmTemperatureHandler(Thing thing, HttpClient httpClient) {
+        super(thing);
+        this.httpClient = httpClient;
+
+        TemperatureSensorFactory sensorFactory = new TemperatureSensorFactory();
+        TemperatureControllerFactory controllerFactory = new TemperatureControllerFactory();
+
+        TemperatureSensor sensor = sensorFactory.getSensor(httpClient, thing.getConfiguration().get("ipAddress").toString());
+        controllerFactory.getController(this, sensor);
+    }
+
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-        if (CHANNEL_1.equals(channelUID.getId())) {
+        if (ACTUAL_CHANNEL.equals(channelUID.getId())) {
             if (command instanceof RefreshType) {
                 // TODO: handle data refresh
             }
@@ -97,4 +114,5 @@ public class BmTemperatureHandler extends BaseThingHandler {
         // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
         // "Can not access device as username and/or password are invalid");
     }
+
 }

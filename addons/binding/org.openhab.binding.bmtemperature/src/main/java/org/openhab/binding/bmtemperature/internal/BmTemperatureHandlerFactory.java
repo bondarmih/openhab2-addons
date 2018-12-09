@@ -12,20 +12,21 @@
  */
 package org.openhab.binding.bmtemperature.internal;
 
-import static org.openhab.binding.bmtemperature.internal.BmTemperatureBindingConstants.*;
+import static org.openhab.binding.bmtemperature.BmTemperatureBindingConstants.*;
 
 import java.util.Collections;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.binding.bmtemperature.internal.BmTemperatureHandler;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
+import org.eclipse.smarthome.io.net.http.HttpClientFactory;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * The {@link BmTemperatureHandlerFactory} is responsible for creating things and thing
@@ -39,6 +40,8 @@ public class BmTemperatureHandlerFactory extends BaseThingHandlerFactory {
 
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections.singleton(THING_TYPE_SAMPLE);
 
+    private HttpClientFactory httpClientFactory;
+
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
         return SUPPORTED_THING_TYPES_UIDS.contains(thingTypeUID);
@@ -49,9 +52,18 @@ public class BmTemperatureHandlerFactory extends BaseThingHandlerFactory {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
         if (THING_TYPE_SAMPLE.equals(thingTypeUID)) {
-            return new BmTemperatureHandler(thing);
+            return new BmTemperatureHandler(thing, httpClientFactory.getCommonHttpClient());
         }
 
         return null;
+    }
+
+    @Reference
+    protected void setHttpClientFactory(HttpClientFactory httpClientFactory) {
+        this.httpClientFactory = httpClientFactory;
+    }
+
+    protected void unsetHttpClientFactory() {
+        this.httpClientFactory = null;
     }
 }

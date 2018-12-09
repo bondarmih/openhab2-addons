@@ -30,12 +30,14 @@
 		<item-type>Number</item-type>
 		<label>Actual temperature</label>
 		<description>Actual Temperature</description>
+		<state readOnly="true" pattern="%s C"></state>
 	</channel-type>
 
 	<channel-type id="pid-setpoint">
 		<item-type>Number</item-type>
 		<label>Target temperature</label>
 		<description>Target Temperature</description>
+		<state step="0.5" min="0" max="30" pattern="%s C"></state>
 	</channel-type>
 
 	<channel-type id="pid-auto">
