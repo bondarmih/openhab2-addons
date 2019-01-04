@@ -4,6 +4,7 @@ import org.eclipse.jetty.client.HttpClient;
 import org.openhab.binding.bmtemperature.sensor.TemperatureSensor;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 public class WebTemperatureSensor implements TemperatureSensor {
 
@@ -17,6 +18,16 @@ public class WebTemperatureSensor implements TemperatureSensor {
 
     @Override
     public CompletableFuture<Double> getValue() {
-        return null;
+        Supplier<Double> supplier = () -> {
+            try {
+                String content = httpClient.GET(address).getContentAsString();
+                return Double.parseDouble(content);
+            } catch (NumberFormatException e) {
+                return 0d;
+            } catch (Exception e) {
+                return +100d;
+            }
+        };
+        return CompletableFuture.supplyAsync(supplier);
     }
 }

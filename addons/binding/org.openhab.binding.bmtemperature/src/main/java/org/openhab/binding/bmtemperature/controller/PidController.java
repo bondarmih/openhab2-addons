@@ -8,11 +8,21 @@ public class PidController implements TemperatureController {
     private TemperatureControllerEventHandler handler;
     private TemperatureSensor sensor;
 
+    @Override
+    public void setSetpoint(Double setpoint) {
+
+    }
+
+    @Override
+    public void dispose() {
+
+    }
+
     public PidController(TemperatureControllerEventHandler handler, TemperatureSensor sensor) {
         this.handler = handler;
         this.sensor = sensor;
 
-        this.initializeSensorRequests();
+//        this.initializeSensorRequests();
     }
 
 

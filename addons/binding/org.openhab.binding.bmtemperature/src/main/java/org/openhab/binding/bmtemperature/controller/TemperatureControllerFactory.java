@@ -5,6 +5,6 @@ import org.openhab.binding.bmtemperature.sensor.TemperatureSensor;
 public class TemperatureControllerFactory {
 
     public TemperatureController getController(TemperatureControllerEventHandler handler, TemperatureSensor sensor) {
-        return new PidController(handler, sensor);
+        return new SwitchController(handler, sensor);
     }
 }

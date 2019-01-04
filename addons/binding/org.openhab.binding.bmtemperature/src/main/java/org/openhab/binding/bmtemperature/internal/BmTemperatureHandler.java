@@ -12,24 +12,26 @@
  */
 package org.openhab.binding.bmtemperature.internal;
 
-import static org.openhab.binding.bmtemperature.BmTemperatureBindingConstants.*;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.smarthome.core.library.types.DecimalType;
+import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.types.Command;
-import org.eclipse.smarthome.core.types.RefreshType;
+import org.openhab.binding.bmtemperature.controller.ControllerState;
+import org.openhab.binding.bmtemperature.controller.TemperatureController;
 import org.openhab.binding.bmtemperature.controller.TemperatureControllerEventHandler;
 import org.openhab.binding.bmtemperature.controller.TemperatureControllerFactory;
 import org.openhab.binding.bmtemperature.sensor.TemperatureSensor;
 import org.openhab.binding.bmtemperature.sensor.TemperatureSensorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.util.
+
+import static org.openhab.binding.bmtemperature.BmTemperatureBindingConstants.*;
 
 /**
  * The {@link BmTemperatureHandler} is responsible for handling commands, which are
@@ -45,6 +47,8 @@ public class BmTemperatureHandler extends BaseThingHandler implements Temperatur
 
     @Nullable
     private BmTemperatureConfiguration config;
+    private TemperatureController controller;
+    private TemperatureSensor sensor;
 
     public BmTemperatureHandler(Thing thing) {
         super(thing);
@@ -57,62 +61,41 @@ public class BmTemperatureHandler extends BaseThingHandler implements Temperatur
         TemperatureSensorFactory sensorFactory = new TemperatureSensorFactory();
         TemperatureControllerFactory controllerFactory = new TemperatureControllerFactory();
 
-        TemperatureSensor sensor = sensorFactory.getSensor(httpClient, thing.getConfiguration().get("ipAddress").toString());
-        controllerFactory.getController(this, sensor);
+        sensor = sensorFactory.getSensor(httpClient, thing.getConfiguration().get("ipAddress").toString());
+        controller = controllerFactory.getController(this, sensor);
     }
 
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-        if (ACTUAL_CHANNEL.equals(channelUID.getId())) {
-            if (command instanceof RefreshType) {
-                // TODO: handle data refresh
+        try {
+            if (SETPOINT_CHANNEL.equals(channelUID.getId())) {
+                if (command instanceof DecimalType) {
+                    controller.setSetpoint(((DecimalType) command).doubleValue());
+                }
             }
-            
-            // TODO: handle command
-
-            // Note: if communication with thing fails for some reason,
-            // indicate that by setting the status with detail information:
-            // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
-            // "Could not control device at IP address x.x.x.x");
+            if (AUTO_CHANNEL.equals(channelUID.getId())) {
+                if (command instanceof OnOffType) {
+                    controller.setAuto(command.equals(OnOffType.ON));
+                }
+            }
+            if (ENABLED_CHANNEL.equals(channelUID.getId())) {
+                if (command instanceof OnOffType) {
+                    controller.setEnabled(command.equals(OnOffType.ON));
+                }
+            }
+        } catch (Exception ex) {
+            updateStatus(ThingStatus.OFFLINE);
         }
     }
 
     @Override
     public void initialize() {
-        // logger.debug("Start initializing!");
         config = getConfigAs(BmTemperatureConfiguration.class);
-
-        // TODO: Initialize the handler.
-        // The framework requires you to return from this method quickly. Also, before leaving this method a thing 
-        // status from one of ONLINE, OFFLINE or UNKNOWN must be set. This might already be the real thing status in 
-        // case you can decide it directly.
-        // In case you can not decide the thing status directly (e.g. for long running connection handshake using WAN
-        // access or similar) you should set status UNKNOWN here and then decide the real status asynchronously in the
-        // background.
-
-        // set the thing status to UNKNOWN temporarily and let the background task decide for the real status.
-        // the framework is then able to reuse the resources from the thing handler initialization.
-        // we set this upfront to reliably check status updates in unit tests.
-        updateStatus(ThingStatus.UNKNOWN);
-        
-        // Example for background initialization:
-        scheduler.execute(() -> {
-            boolean thingReachable = true; // <background task with long running initialization here>
-            // when done do:
-            if (thingReachable) {
-                updateStatus(ThingStatus.ONLINE);
-            } else {
-                updateStatus(ThingStatus.OFFLINE);
-            }
-        });
-
-        // logger.debug("Finished initializing!");
-
-        // Note: When initialization can NOT be done set the status with more details for further
-        // analysis. See also class ThingStatusDetail for all available status details.
-        // Add a description to give user information to understand why thing does not work as expected. E.g.
-        // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-        // "Can not access device as username and/or password are invalid");
     }
 
+    @Override
+    public void handleControllerState(ControllerState state) {
+        updateState(ACTUAL_CHANNEL, new DecimalType(state.getActual()));
+        updateState(HEATER_CHANNEL, state.isHeater() ? OnOffType.ON : OnOffType.OFF);
+    }
 }
